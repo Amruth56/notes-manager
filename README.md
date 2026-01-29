@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Notes Manager | IIIT Dharwad
 
-## Getting Started
+A production-grade, secure, and scalable EdTech platform for managing academic notes organized by Branch → Semester → Subject.
 
-First, run the development server:
+## 🚀 Key Features
+- **Hierarchical Navigation**: Browse notes through a clear academic structure.
+- **Role-Based Access Control (RBAC)**: 
+  - `student`: View organizational notes, manage personal notes.
+  - `cr` & `professor`: Upload and manage organizational notes.
+- **Personal Notes Section**: Private storage for your handwritten or individual study materials.
+- **Secure Authentication**: NextAuth.js with JWT and Bcrypt encryption.
+- **Responsive UI**: Modern, clean design using Tailwind CSS with an orange/white theme.
 
+## 🛠️ Tech Stack
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Database**: MongoDB with Mongoose
+- **Auth**: NextAuth.js (JWT)
+- **Styling**: Tailwind CSS
+- **Testing**: Jest (Unit/Integration), Playwright (E2E)
+- **Deployment**: Vercel
+
+## 🏗️ Architecture
+The application follows a Clean Architecture pattern with:
+- **Server Components**: Used for data fetching (Dashboard, Branch, Semester, Subject pages) to ensure multi-stage SSR.
+- **Client Components**: Used for interactive elements (Forms, Buttons, Auth).
+- **API Routes**: Handle CRUD operations and secondary logic.
+- **Middleware/Callbacks**: Handle authentication and role verification.
+
+## 🔒 Security
+- **JWT Sessions**: Stateless authentication with local session storage.
+- **Password Hashing**: Bcrypt with 10 salt rounds.
+- **API Protection**: Each endpoint verifies the user session and role before execution.
+- **Database Isolation**: Personal notes are query-filtered by `createdBy` and `isPersonal` flags to prevent unauthorized access.
+
+## 🧪 Testing
+- **Unit Tests**: Logic for authorization and permissions (`/tests/unit`).
+- **Integration Tests**: API endpoint validation.
+- **E2E Tests**: Critical paths like Login and Note Discovery using Playwright.
+
+Run tests with:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📦 Deployment & CI/CD
+- **Vercel**: Integrated for automatic deployments.
+- **GitHub Actions**: Configured to run linting and tests on every push.
+- **Environment Variables**:
+  - `MONGODB_URI`: Connection string for Atlas.
+  - `NEXTAUTH_SECRET`: Encryption key for JWT.
+  - `NEXTAUTH_URL`: Base URL of the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📈 Scalability & Future Enhancements
+- **MongoDB Indexing**: Indexes on `subjectId` and `createdBy` for fast lookups.
+- **CDN Integration**: Recommending UploadThing or AWS S3 for binary storage.
+- **Search & Filter**: Future integration of Algolia or MongoDB Atlas Search.
+- **Multiple Organizations**: Multi-tenant support planned for larger rollouts.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built with ❤️ for IIIT Dharwad students.
