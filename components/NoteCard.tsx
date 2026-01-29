@@ -96,7 +96,7 @@ export default function NoteCard({ note }: NoteCardProps) {
         </div>
       )}
 
-      <div className="h-40 bg-gray-50 flex items-center justify-center relative cursor-pointer" onClick={() => window.open(note.fileUrl, "_blank")}>
+      <div className="h-40 bg-gray-50 flex items-center justify-center relative cursor-pointer" onClick={() => window.open(`/api/notes/${note._id}/raw`, "_blank")}>
         {isPdf ? (
           <svg className="w-16 h-16 text-orange-200 group-hover:text-orange-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A1 1 0 0111.293 2.707l4 4a1 1 0 01.293.707V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
@@ -133,7 +133,7 @@ export default function NoteCard({ note }: NoteCardProps) {
             </div>
           </div>
         ) : (
-          <h4 className="font-bold text-gray-900 mb-1 truncate cursor-pointer hover:text-orange-600 transition" title={note.title} onClick={() => window.open(note.fileUrl, "_blank")}>
+          <h4 className="font-bold text-gray-900 mb-1 truncate cursor-pointer hover:text-orange-600 transition" title={note.title} onClick={() => window.open(`/api/notes/${note._id}/raw`, "_blank")}>
             {note.title}
           </h4>
         )}
@@ -142,14 +142,14 @@ export default function NoteCard({ note }: NoteCardProps) {
         
         <div className="flex gap-2">
           <button
-            onClick={() => window.open(note.fileUrl, "_blank")}
+            onClick={() => window.open(`/api/notes/${note._id}/raw`, "_blank")}
             className="flex-1 bg-orange-50 text-orange-600 font-semibold py-2 rounded-lg text-sm hover:bg-orange-600 hover:text-white transition-all shadow-sm"
           >
             Review
           </button>
           <a
             href={note.fileUrl}
-            download
+            download={note.title}
             className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-gray-100 hover:text-gray-600 transition-all border border-gray-100"
             title="Download"
           >
