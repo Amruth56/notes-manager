@@ -1,8 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { ISemester } from "@/types";
 
-const SemesterSchema = new mongoose.Schema({
-  number: Number,
-  branchId: mongoose.Schema.Types.ObjectId,
+const SemesterSchema = new Schema<ISemester>({
+  number: { type: Number, required: true },
+  branchId: { type: Schema.Types.ObjectId, ref: "Branch", required: true },
 });
 
-export default mongoose.models.Semester || mongoose.model("Semester", SemesterSchema);
+export default mongoose.models.Semester ||
+  mongoose.model<ISemester>("Semester", SemesterSchema);
