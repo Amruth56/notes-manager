@@ -22,15 +22,17 @@
           "name": "next"
         }
     ],
-    "typeRoots": ["./node_modules/@types", "./types"]
+    "typeRoots": ["./node_modules/@types", "./node_modules", "./types"]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "components/**/*.tsx"
   ],
   "exclude": ["node_modules"]
 }
