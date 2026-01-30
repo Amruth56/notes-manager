@@ -25,7 +25,7 @@ export async function GET(req: Request) {
       query.isPersonal = true;
       query.createdBy = (session.user as any).id;
     } else {
-      // Organizational notes are visible to everyone in the org (simplified here)
+      // Organizational notes are visible to everyone in the org
       query.isPersonal = false;
     }
 
@@ -49,7 +49,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { title, fileUrl, fileType, subjectId, isPersonal } = body;
 
-    // Check permissions for organizational notes
     if (!isPersonal && (session.user as any).role === "student") {
       return NextResponse.json(
         { error: "Students cannot upload organizational notes" },
