@@ -22,9 +22,17 @@ export async function DELETE(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    if (note.createdBy.toString() !== (session.user as any).id) {
+    const userRole = (session.user as any).role;
+    const userId = (session.user as any).id;
+
+    if (
+      note.createdBy.toString() !== userId &&
+      !["professor", "cr"].includes(userRole)
+    ) {
       return NextResponse.json(
-        { error: "Unauthorized: You do not own this note" },
+        {
+          error: "Unauthorized: You do not have permission to delete this note",
+        },
         { status: 403 },
       );
     }
@@ -60,9 +68,17 @@ export async function PUT(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    if (note.createdBy.toString() !== (session.user as any).id) {
+    const userRole = (session.user as any).role;
+    const userId = (session.user as any).id;
+
+    if (
+      note.createdBy.toString() !== userId &&
+      !["professor", "cr"].includes(userRole)
+    ) {
       return NextResponse.json(
-        { error: "Unauthorized: You do not own this note" },
+        {
+          error: "Unauthorized: You do not have permission to update this note",
+        },
         { status: 403 },
       );
     }

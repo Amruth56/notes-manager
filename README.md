@@ -6,7 +6,7 @@ A production-grade, secure, and scalable EdTech platform for managing academic n
 - **Hierarchical Navigation**: Browse notes through a clear academic structure.
 - **Role-Based Access Control (RBAC)**: 
   - `student`: View organizational notes, manage personal notes.
-  - `cr` & `professor`: Upload and manage organizational notes.
+  - `cr` & `professor`: Full management rights. Can upload, edit, and delete any organizational note to ensure content continuity (e.g., if a student contributor leaves the organization).
 - **Personal Notes Section**: Private storage for your handwritten or individual study materials.
 - **Secure Authentication**: NextAuth.js with JWT and Bcrypt encryption.
 - **Responsive UI**: Modern, clean design using Tailwind CSS with an orange/white theme.

@@ -34,7 +34,10 @@ export default function NoteCard({ note }: NoteCardProps) {
   });
 
   const isPdf = note.fileType === "pdf";
+  const role = (session?.user as any)?.role;
   const isOwner = session?.user && (session.user as any).id === note.createdBy;
+  const isAdmin = ["professor", "cr"].includes(role);
+  const canManage = isOwner || isAdmin;
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this note?")) return;
@@ -48,7 +51,7 @@ export default function NoteCard({ note }: NoteCardProps) {
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 relative group">
-      {isOwner && (
+      {canManage && (
         <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 p-1 rounded-lg backdrop-blur-sm">
           <button
             onClick={() => setIsEditing(!isEditing)}
