@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchBranches, fetchSemesters, fetchSubjects, fetchSession, createBranch, createSemester, createSubject, createNote } from "@/lib/api";
 
 export default function UploadForm() {
   const router = useRouter();
@@ -11,106 +13,57 @@ export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState("pdf");
   
-  // Hierarchical selection
-  const [branches, setBranches] = useState<any[]>([]);
-  const [semesters, setSemesters] = useState<any[]>([]);
-  const [subjects, setSubjects] = useState<any[]>([]);
-  
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [newSubjectName, setNewSubjectName] = useState("");
   
-  // New fields for adding branches and semesters
   const [newBranchName, setNewBranchName] = useState("");
   const [newSemesterNumber, setNewSemesterNumber] = useState("");
   
   const [isPersonal, setIsPersonal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
-  const [dataLoading, setDataLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string>("");
 
-  // Load user session and role
-  useEffect(() => {
-    fetch("/api/auth/session")
-      .then((res) => res.json())
-      .then((session) => {
-        if (session?.user) {
-          setUserRole(session.user.role || "");
-        }
-      })
-      .catch((err) => console.error("Error loading session:", err));
-  }, []);
+  // 1. Fetch Session (User Role)
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: fetchSession,
+  });
+  const userRole = session?.user?.role || "";
 
-  // Load branches on mount
-  useEffect(() => {
-    setDataLoading(true);
-    fetch("/api/branches")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load branches");
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Branches loaded:", data);
-        setBranches(data);
-      })
-      .catch((err) => {
-        console.error("Error loading branches:", err);
-        setError("Failed to load branches. Please refresh the page.");
-      })
-      .finally(() => setDataLoading(false));
-  }, []);
+  // 2. Fetch Branches
+  const { data: branches = [], isLoading: branchesLoading } = useQuery({
+    queryKey: ["branches"],
+    queryFn: fetchBranches,
+  });
 
-  // Load semesters when branch is selected
-  useEffect(() => {
-    if (selectedBranch) {
-      fetch(`/api/semesters?branchId=${selectedBranch}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to load semesters");
-          return res.json();
-        })
-        .then((data) => {
-          console.log("Semesters loaded:", data);
-          setSemesters(data);
-          setSelectedSemester("");
-          setSubjects([]);
-          setSelectedSubject("");
-        })
-        .catch((err) => {
-          console.error("Error loading semesters:", err);
-          setError("Failed to load semesters.");
-        });
-    }
-  }, [selectedBranch]);
+  // 3. Fetch Semesters (Dependent on selectedBranch)
+  const { data: semesters = [] } = useQuery({
+    queryKey: ["semesters", selectedBranch],
+    queryFn: () => fetchSemesters(selectedBranch),
+    enabled: !!selectedBranch && selectedBranch !== "new",
+  });
 
-  // Load subjects when semester is selected
-  useEffect(() => {
-    if (selectedSemester) {
-      fetch(`/api/subjects?semesterId=${selectedSemester}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to load subjects");
-          return res.json();
-        })
-        .then((data) => {
-          console.log("Subjects loaded:", data);
-          setSubjects(data);
-          setSelectedSubject("");
-        })
-        .catch((err) => {
-          console.error("Error loading subjects:", err);
-          setError("Failed to load subjects.");
-        });
-    }
-  }, [selectedSemester]);
+  // 4. Fetch Subjects (Dependent on selectedSemester)
+  const { data: subjects = [] } = useQuery({
+    queryKey: ["subjects", selectedSemester],
+    queryFn: () => fetchSubjects(selectedSemester),
+    enabled: !!selectedSemester && selectedSemester !== "new",
+  });
+
+  // Mutations
+  const createBranchMutation = useMutation({ mutationFn: createBranch });
+  const createSemesterMutation = useMutation({ mutationFn: createSemester });
+  const createSubjectMutation = useMutation({ mutationFn: createSubject });
+  const createNoteMutation = useMutation({ mutationFn: createNote });
+
+  const queryClient = useQueryClient();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
       
-      // Auto-detect file type
       if (selectedFile.type === "application/pdf") {
         setFileType("pdf");
       } else if (selectedFile.type.startsWith("image/")) {
@@ -121,15 +74,10 @@ export default function UploadForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
     try {
-      // Validate
-      if (!file) {
-        throw new Error("Please select a file to upload");
-      }
-
+      if (!file) throw new Error("Please select a file to upload");
       if (!isPersonal && (!selectedBranch || !selectedSemester)) {
         throw new Error("Please select branch and semester");
       }
@@ -138,121 +86,73 @@ export default function UploadForm() {
       let finalSemesterId = selectedSemester;
       let finalSubjectId = selectedSubject;
 
-      // Create new branch if needed (only for professors and CRs)
+      // Create new branch
       if (!isPersonal && selectedBranch === "new" && newBranchName.trim()) {
-        if (userRole !== "professor" && userRole !== "cr") {
-          throw new Error("Only professors and CRs can create new branches");
-        }
-        
-        const branchRes = await fetch("/api/branches", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: newBranchName.trim() }),
-        });
-
-        if (!branchRes.ok) throw new Error("Failed to create branch");
-        const newBranch = await branchRes.json();
+        if (userRole !== "professor" && userRole !== "cr") throw new Error("Permission denied");
+        const newBranch = await createBranchMutation.mutateAsync(newBranchName.trim());
         finalBranchId = newBranch._id;
-        
-        // Refresh branches list
-        const updatedBranches = await fetch("/api/branches").then(r => r.json());
-        setBranches(updatedBranches);
+        queryClient.invalidateQueries({ queryKey: ["branches"] });
       }
 
-      // Create new semester if needed (only for professors and CRs)
+      // Create new semester
       if (!isPersonal && selectedSemester === "new" && newSemesterNumber.trim() && finalBranchId) {
-        if (userRole !== "professor" && userRole !== "cr") {
-          throw new Error("Only professors and CRs can create new semesters");
-        }
-        
-        const semesterRes = await fetch("/api/semesters", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            number: parseInt(newSemesterNumber),
-            branchId: finalBranchId,
-          }),
+        if (userRole !== "professor" && userRole !== "cr") throw new Error("Permission denied");
+        const newSemester = await createSemesterMutation.mutateAsync({
+          number: parseInt(newSemesterNumber),
+          branchId: finalBranchId,
         });
-
-        if (!semesterRes.ok) throw new Error("Failed to create semester");
-        const newSemester = await semesterRes.json();
         finalSemesterId = newSemester._id;
-        
-        // Refresh semesters list
-        const updatedSemesters = await fetch(`/api/semesters?branchId=${finalBranchId}`).then(r => r.json());
-        setSemesters(updatedSemesters);
+        queryClient.invalidateQueries({ queryKey: ["semesters", finalBranchId] });
       }
 
-      // Create new subject if needed
+      // Create new subject
       if (!isPersonal && selectedSubject === "new" && newSubjectName.trim()) {
-        const subjectRes = await fetch("/api/subjects", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: newSubjectName.trim(),
-            semesterId: finalSemesterId,
-          }),
+        const newSubject = await createSubjectMutation.mutateAsync({
+          name: newSubjectName.trim(),
+          semesterId: finalSemesterId,
         });
-
-        if (!subjectRes.ok) throw new Error("Failed to create subject");
-        const newSubject = await subjectRes.json();
         finalSubjectId = newSubject._id;
+        queryClient.invalidateQueries({ queryKey: ["subjects", finalSemesterId] });
       }
 
-      if (!isPersonal && !finalSubjectId) {
-        throw new Error("Please select or create a subject");
-      }
+      if (!isPersonal && !finalSubjectId) throw new Error("Please select or create a subject");
 
-      // Upload file (simplified - in production use UploadThing/S3)
-      setUploading(true);
-      
-      // Convert to base64 for persistent storage (demo only)
+      // File conversion
       const fileUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = reject;
       });
-      
-      // Create note
-      const noteRes = await fetch("/api/notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          fileUrl, // In production, this would be the cloud URL
-          fileType,
-          subjectId: finalSubjectId || null,
-          isPersonal,
-        }),
-      });
 
-      if (!noteRes.ok) {
-        const data = await noteRes.json();
-        throw new Error(data.error || "Failed to create note");
-      }
+      await createNoteMutation.mutateAsync({
+        title,
+        fileUrl,
+        fileType,
+        subjectId: finalSubjectId || null,
+        isPersonal,
+      });
 
       router.push(isPersonal ? "/personal" : `/subject/${finalSubjectId}`);
       router.refresh();
     } catch (err: any) {
       setError(err.message);
-    } finally {
-      setLoading(false);
-      setUploading(false);
     }
   };
+
+  const isSubmitting = createBranchMutation.isPending || createSemesterMutation.isPending || createSubjectMutation.isPending || createNoteMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl mx-auto bg-white p-8 rounded-2xl border border-gray-100 shadow-xl shadow-orange-50 space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 border-b pb-4">Upload New Note</h2>
       
-      {dataLoading && (
+      {branchesLoading && (
         <div className="bg-blue-50 text-blue-600 p-4 rounded-xl text-sm border border-blue-100">
           Loading branches and data...
         </div>
       )}
 
-      {!dataLoading && branches.length === 0 && !isPersonal && (
+      {!branchesLoading && branches.length === 0 && !isPersonal && (
         <div className="bg-yellow-50 text-yellow-700 p-4 rounded-xl text-sm border border-yellow-100">
           <p className="font-semibold mb-2">⚠️ No branches found in database</p>
           <p>Please visit <a href="/api/seed" className="underline font-bold" target="_blank">/api/seed</a> to populate the database with initial data.</p>
@@ -292,7 +192,7 @@ export default function UploadForm() {
         />
       </div>
 
-      {/* Hierarchical Selection - Only for Organizational Notes */}
+      {/* Hierarchical Selection */}
       {!isPersonal && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -306,7 +206,7 @@ export default function UploadForm() {
                 required={!isPersonal}
               >
                 <option value="">Select branch...</option>
-                {branches.map((b) => (
+                {branches.map((b: any) => (
                   <option key={b._id} value={b._id}>{b.name}</option>
                 ))}
                 {(userRole === "professor" || userRole === "cr") && (
@@ -326,7 +226,7 @@ export default function UploadForm() {
                 disabled={!selectedBranch || selectedBranch === "new"}
               >
                 <option value="">Select semester...</option>
-                {semesters.map((s) => (
+                {semesters.map((s: any) => (
                   <option key={s._id} value={s._id}>Semester {s.number}</option>
                 ))}
                 {(userRole === "professor" || userRole === "cr") && selectedBranch && selectedBranch !== "new" && (
@@ -379,7 +279,7 @@ export default function UploadForm() {
               disabled={!selectedSemester || selectedBranch === "new" || selectedSemester === "new"}
             >
               <option value="">Select subject...</option>
-              {subjects.map((s) => (
+              {subjects.map((s: any) => (
                 <option key={s._id} value={s._id}>{s.name}</option>
               ))}
               <option value="new">+ Add New Subject</option>
@@ -436,10 +336,10 @@ export default function UploadForm() {
         </button>
         <button
           type="submit"
-          disabled={loading || uploading}
+          disabled={isSubmitting}
           className="flex-1 bg-orange-600 text-white font-bold py-3 rounded-xl hover:bg-orange-700 transition transform active:scale-95 disabled:bg-gray-400"
         >
-          {uploading ? "Uploading..." : loading ? "Publishing..." : "Publish Note"}
+          {isSubmitting ? "Processing..." : "Publish Note"}
         </button>
       </div>
     </form>

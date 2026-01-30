@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { deleteNote, updateNote } from "@/lib/api";
 
 interface NoteCardProps {
   note: {
@@ -20,53 +22,38 @@ export default function NoteCard({ note }: NoteCardProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(note.title);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const { mutate: deleteNoteMutation, isPending: isDeleting } = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => {
+      router.refresh();
+    },
+    onError: () => {
+      alert("Error deleting note");
+    },
+  });
+
+  const { mutate: updateNoteMutation, isPending: isSaving } = useMutation({
+    mutationFn: updateNote,
+    onSuccess: () => {
+      setIsEditing(false);
+      router.refresh();
+    },
+    onError: () => {
+      alert("Error updating note");
+    },
+  });
 
   const isPdf = note.fileType === "pdf";
   const isOwner = session?.user && (session.user as any).id === note.createdBy;
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this note?")) return;
-    setIsDeleting(true);
-    try {
-      const res = await fetch(`/api/notes/${note._id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        router.refresh();
-      } else {
-        alert("Failed to delete note");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error deleting note");
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteNoteMutation(note._id);
   };
 
   const handleUpdate = async () => {
     if (!newTitle.trim()) return;
-    setIsSaving(true);
-    try {
-      const res = await fetch(`/api/notes/${note._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle }),
-      });
-      if (res.ok) {
-        setIsEditing(false);
-        router.refresh();
-      } else {
-        alert("Failed to update note");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error updating note");
-    } finally {
-      setIsSaving(false);
-    }
+    updateNoteMutation({ id: note._id, title: newTitle });
   };
 
   return (
