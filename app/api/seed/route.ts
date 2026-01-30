@@ -29,14 +29,12 @@ export async function GET() {
     for (const branchName of branchesList) {
       const branch = await Branch.create({ name: branchName });
 
-      // Create 8 semesters for each branch
       for (let i = 1; i <= 8; i++) {
         const semester = await Semester.create({
           number: i,
           branchId: branch._id,
         });
 
-        // Add subjects specifically for CSE Semester 5 (Demo Data)
         if (branchName === "Computer Science & Engineering" && i === 5) {
           await Subject.create({
             name: "Database Management Systems",
