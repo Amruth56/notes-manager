@@ -16,6 +16,7 @@ A production-grade, secure, and scalable EdTech platform for managing academic n
 - **Language**: TypeScript
 - **Database**: MongoDB with Mongoose
 - **Auth**: NextAuth.js (JWT)
+- **Data Fetching & State:**: TanStack Query
 - **Styling**: Tailwind CSS
 - **Testing**: Jest (Unit/Integration), Playwright (E2E)
 - **Deployment**: Vercel
