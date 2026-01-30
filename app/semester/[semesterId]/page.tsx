@@ -1,32 +1,37 @@
+"use client";
+
 import ResourceCard from "@/components/ResourceCard";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { useSession } from "next-auth/react";
+import { redirect, useParams } from "next/navigation";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { fetchSubjects } from "@/lib/api";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
-async function getSubjects(semesterId: string) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/subjects?semesterId=${semesterId}`, {
-    cache: "no-store",
+export default function SemesterPage() {
+  const { data: session, status } = useSession();
+  const params = useParams();
+  const semesterId = params?.semesterId as string;
+
+  const { data: subjects = [], isLoading } = useQuery({
+    queryKey: ["subjects", semesterId],
+    queryFn: () => fetchSubjects(semesterId),
+    enabled: !!semesterId,
   });
-  if (!res.ok) return [];
-  return res.json();
-}
 
-export default async function SemesterPage({ params }: { params: { semesterId: string } }) {
-  const session = await getServerSession(authOptions);
+  if (status === "loading" || isLoading) {
+    return <div className="p-8 text-center">Loading subjects...</div>;
+  }
   
   if (!session) {
     redirect("/login");
   }
 
-  const { semesterId } = await params;
-  const subjects = await getSubjects(semesterId);
-
   return (
     <div className="py-8">
       <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium mb-6">
-        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        <ArrowBackIcon className="w-4 h-4 mr-2" />
         Back to Dashboard
       </Link>
 
@@ -47,7 +52,7 @@ export default async function SemesterPage({ params }: { params: { semesterId: s
               title={subject.name}
               subtitle="Course Unit"
               href={`/subject/${subject._id}`}
-              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+              icon={<MenuBookIcon className="w-6 h-6" />}
             />
           ))}
         </div>

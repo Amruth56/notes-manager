@@ -107,3 +107,23 @@ export const deleteNote = async (id: string) => {
   if (!res.ok) throw new Error("Failed to delete note");
   return res.json();
 };
+
+export const fetchSubject = async (id: string) => {
+  const res = await fetch(`/api/subjects/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch subject");
+  return res.json();
+};
+
+export const fetchNotes = async (params?: {
+  subjectId?: string;
+  isPersonal?: boolean;
+}) => {
+  const url = new URL("/api/notes", window.location.origin);
+  if (params?.subjectId) url.searchParams.append("subjectId", params.subjectId);
+  if (params?.isPersonal !== undefined)
+    url.searchParams.append("isPersonal", String(params.isPersonal));
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error("Failed to fetch notes");
+  return res.json();
+};

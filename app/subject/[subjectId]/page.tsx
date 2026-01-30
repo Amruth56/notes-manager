@@ -1,72 +1,46 @@
+"use client";
+
 import NoteCard from "@/components/NoteCard";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { useSession } from "next-auth/react";
+import { redirect, useParams } from "next/navigation";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNotes, fetchSubject } from "@/lib/api";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DescriptionIcon from '@mui/icons-material/Description';
 
-import { connectDB } from "@/lib/db";
-import Note from "@/models/Note";
-import Subject from "@/models/Subject";
-import Semester from "@/models/Semester";
-import Branch from "@/models/Branch";
+export default function SubjectPage() {
+  const { data: session, status } = useSession();
+  const params = useParams();
+  const subjectId = params?.subjectId as string;
 
-async function getNotes(subjectId: string) {
-  try {
-    await connectDB();
-    const notes = await Note.find({ 
-      subjectId, 
-      isPersonal: false 
-    }).sort({ createdAt: -1 });
-    
-    // Serialize for Client Component
-    return JSON.parse(JSON.stringify(notes));
-  } catch (error) {
-    console.error("Error fetching notes:", error);
-    return [];
+  const { data: notes = [], isLoading: notesLoading } = useQuery({
+    queryKey: ["notes", subjectId],
+    queryFn: () => fetchNotes({ subjectId, isPersonal: false }),
+    enabled: !!subjectId,
+  });
+
+  const { data: subject, isLoading: subjectLoading } = useQuery({
+    queryKey: ["subject", subjectId],
+    queryFn: () => fetchSubject(subjectId),
+    enabled: !!subjectId,
+  });
+
+  const semester = subject?.semesterId;
+  const branch = semester?.branchId;
+
+  if (status === "loading" || notesLoading || subjectLoading) {
+    return <div className="p-8 text-center">Loading Content...</div>;
   }
-}
-
-async function getSubjectDetails(subjectId: string) {
-  try {
-    await connectDB();
-    // Ensure models are registered
-    await Promise.all([Semester.init(), Branch.init()]).catch(() => {});
-    
-    const subject = await Subject.findById(subjectId).populate({
-      path: "semesterId",
-      model: Semester,
-      populate: {
-        path: "branchId",
-        model: Branch
-      }
-    });
-
-    if (!subject) return null;
-    return JSON.parse(JSON.stringify(subject));
-  } catch (error) {
-    console.error("Error fetching subject details:", error);
-    return null;
-  }
-}
-
-export default async function SubjectPage({ params }: { params: { subjectId: string } }) {
-  const session = await getServerSession(authOptions);
   
   if (!session) {
     redirect("/login");
   }
 
-  const { subjectId } = await params;
-  const notes = await getNotes(subjectId);
-  const subject = await getSubjectDetails(subjectId);
-
-  const semester = subject?.semesterId;
-  const branch = semester?.branchId;
-
   return (
     <div className="py-8">
       <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium mb-6">
-        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        <ArrowBackIcon className="w-4 h-4 mr-2" />
         Back to Dashboard
       </Link>
 
@@ -95,7 +69,7 @@ export default async function SubjectPage({ params }: { params: { subjectId: str
 
       {notes.length === 0 ? (
         <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-          <svg className="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          <DescriptionIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <p className="text-gray-400">No notes uploaded for this subject yet.</p>
         </div>
       ) : (

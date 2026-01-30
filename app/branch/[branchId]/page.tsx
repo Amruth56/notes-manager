@@ -1,31 +1,37 @@
+"use client";
+
 import ResourceCard from "@/components/ResourceCard";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { useSession } from "next-auth/react";
+import { redirect, useParams } from "next/navigation";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { fetchSemesters } from "@/lib/api";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 
-async function getSemesters(branchId: string) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/semesters?branchId=${branchId}`, {
-    cache: "no-store",
+export default function BranchPage() {
+  const { data: session, status } = useSession();
+  const params = useParams();
+  const branchId = params?.branchId as string;
+
+  const { data: semesters = [], isLoading } = useQuery({
+    queryKey: ["semesters", branchId],
+    queryFn: () => fetchSemesters(branchId),
+    enabled: !!branchId,
   });
-  if (!res.ok) return [];
-  return res.json();
-}
 
-export default async function BranchPage({ params }: { params: { branchId: string } }) {
-  const session = await getServerSession(authOptions);
+  if (status === "loading" || isLoading) {
+    return <div className="p-8 text-center">Loading semesters...</div>;
+  }
   
   if (!session) {
     redirect("/login");
   }
 
-  const { branchId } = await params;
-  const semesters = await getSemesters(branchId);
-
   return (
     <div className="py-8">
       <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium mb-6">
-        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        <ArrowBackIcon className="w-4 h-4 mr-2" />
         Back to Branches
       </Link>
 
@@ -46,7 +52,7 @@ export default async function BranchPage({ params }: { params: { branchId: strin
               title={`Semester ${sem.number}`}
               subtitle="Academic Term"
               href={`/semester/${sem._id}`}
-              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>}
+              icon={<LibraryBooksIcon className="w-6 h-6" />}
             />
           ))}
         </div>
@@ -54,5 +60,3 @@ export default async function BranchPage({ params }: { params: { branchId: strin
     </div>
   );
 }
-
-import Link from "next/link";

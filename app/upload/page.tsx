@@ -10,11 +10,8 @@ export default async function UploadPage() {
     redirect("/login");
   }
 
-  // Double check authorization on server
   const role = (session.user as any).role;
-  // Students can only upload personal notes, form handles that or we can restrict page access
-  // Actually, let's let everyone access but the form handles permission logic for 'isPersonal: false'
-  
+
   return (
     <div className="py-8">
       <header className="mb-10 text-center">
