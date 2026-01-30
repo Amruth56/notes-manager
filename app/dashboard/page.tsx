@@ -24,7 +24,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="py-8">
+    <div className="">
       <header className="mb-10">
         <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Academic Branches</h1>
         <p className="text-gray-500 text-lg">Select your branch to view semesters and subjects.</p>

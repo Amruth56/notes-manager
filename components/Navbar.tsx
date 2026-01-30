@@ -29,7 +29,6 @@ export default function Navbar() {
                   {session.user?.name?.charAt(0).toUpperCase() || "U"}
                 </button>
                 
-                {/* Dropdown Menu */}
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
                   <div className="px-4 py-3 border-b border-gray-50">
                     <p className="text-sm font-semibold text-gray-900 truncate">{session.user?.name}</p>

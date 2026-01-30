@@ -38,7 +38,7 @@ export default function SubjectPage() {
   }
 
   return (
-    <div className="py-8">
+    <div className="">
       <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium mb-6">
         <ArrowBackIcon className="w-4 h-4 mr-2" />
         Back to Dashboard
@@ -60,11 +60,6 @@ export default function SubjectPage() {
           )}
           <p className="text-gray-500 text-lg">Download or view PDFs and images for this unit.</p>
         </div>
-        {((session.user as any).role === "cr" || (session.user as any).role === "professor") && (
-          <Link href={`/upload?subjectId=${subjectId}`} className="bg-orange-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-orange-700 transition shadow-lg shadow-orange-200">
-            Upload New Note
-          </Link>
-        )}
       </header>
 
       {notes.length === 0 ? (

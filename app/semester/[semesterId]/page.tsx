@@ -29,7 +29,7 @@ export default function SemesterPage() {
   }
 
   return (
-    <div className="py-8">
+    <div className="">
       <Link href="/dashboard" className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium mb-6">
         <ArrowBackIcon className="w-4 h-4 mr-2" />
         Back to Dashboard

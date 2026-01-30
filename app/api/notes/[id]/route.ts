@@ -22,7 +22,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Only owner can delete
     if (note.createdBy.toString() !== (session.user as any).id) {
       return NextResponse.json(
         { error: "Unauthorized: You do not own this note" },
@@ -61,7 +60,6 @@ export async function PUT(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Only owner can update
     if (note.createdBy.toString() !== (session.user as any).id) {
       return NextResponse.json(
         { error: "Unauthorized: You do not own this note" },

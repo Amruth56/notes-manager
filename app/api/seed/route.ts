@@ -35,24 +35,24 @@ export async function GET() {
           branchId: branch._id,
         });
 
-        if (branchName === "Computer Science & Engineering" && i === 5) {
-          await Subject.create({
-            name: "Database Management Systems",
-            semesterId: semester._id,
-          });
-          await Subject.create({
-            name: "Software Engineering",
-            semesterId: semester._id,
-          });
-          await Subject.create({
-            name: "Computer Networks",
-            semesterId: semester._id,
-          });
-          await Subject.create({
-            name: "Formal Languages & Automata",
-            semesterId: semester._id,
-          });
-        }
+        // if (branchName === "Computer Science & Engineering" && i === 5) {
+        //   await Subject.create({
+        //     name: "Database Management Systems",
+        //     semesterId: semester._id,
+        //   });
+        //   await Subject.create({
+        //     name: "Software Engineering",
+        //     semesterId: semester._id,
+        //   });
+        //   await Subject.create({
+        //     name: "Computer Networks",
+        //     semesterId: semester._id,
+        //   });
+        //   await Subject.create({
+        //     name: "Formal Languages & Automata",
+        //     semesterId: semester._id,
+        //   });
+        // }
       }
     }
 

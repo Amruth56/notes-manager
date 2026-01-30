@@ -12,7 +12,6 @@ export async function GET(
     const { id } = await params;
     await connectDB();
 
-    // Ensure models are registered (Mongoose weirdness prevention)
     await Promise.all([Semester.init(), Branch.init()]).catch(() => {});
 
     const subject = await Subject.findById(id).populate({

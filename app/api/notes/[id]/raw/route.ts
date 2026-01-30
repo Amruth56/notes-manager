@@ -22,17 +22,11 @@ export async function GET(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Parse the data URL
-    // Format: data:[<mediatype>][;base64],<data>
-    // Format: data:[<mediatype>][;base64],<data>
-    // Updated regex to include numbers and dots in mime type (e.g. application/vnd.openxmlformats-officedocument.wordprocessingml.document)
     const matches = note.fileUrl.match(
       /^data:([a-zA-Z0-9.+\/-]+);base64,(.+)$/,
     );
 
     if (!matches || matches.length !== 3) {
-      // If it starts with data: but didn't match, it's likely a complex/malformed data URL.
-      // Browsers block top-level navigation to data URLs, so we must not redirect.
       if (note.fileUrl.startsWith("data:")) {
         console.error("Failed to parse data URL for note:", id);
         return NextResponse.json(
@@ -40,7 +34,6 @@ export async function GET(
           { status: 500 },
         );
       }
-      // If it's not a base64 data URL, assume it's a normal remote URL
       return NextResponse.redirect(note.fileUrl);
     }
 
@@ -51,7 +44,7 @@ export async function GET(
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `inline; filename="${note.title}.${note.fileType}"`, // inline = open in browser, attachment = download
+        "Content-Disposition": `inline; filename="${note.title}.${note.fileType}"`,
         "Content-Length": buffer.length.toString(),
       },
     });

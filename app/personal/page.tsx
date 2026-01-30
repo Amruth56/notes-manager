@@ -15,7 +15,6 @@ async function getPersonalNotes(userId: string) {
       createdBy: userId
     }).sort({ createdAt: -1 });
     
-    // Serialize for Client Component
     return JSON.parse(JSON.stringify(notes));
   } catch (error) {
     console.error("Error fetching personal notes:", error);
@@ -33,7 +32,7 @@ export default async function PersonalPage() {
   const notes = await getPersonalNotes((session.user as any).id);
 
   return (
-    <div className="py-8">
+    <div className="py-">
       <header className="mb-10 flex justify-between items-end">
         <div>
           <h1 className="text-4xl font-extrabold text-gray-900 mb-2">My Personal Notes</h1>

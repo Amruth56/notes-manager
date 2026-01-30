@@ -1,11 +1,6 @@
 import Link from "next/link";
+import { ResourceCardProps } from "@/types";
 
-interface ResourceCardProps {
-  title: string;
-  subtitle?: string;
-  href: string;
-  icon?: React.ReactNode;
-}
 
 export default function ResourceCard({ title, subtitle, href, icon }: ResourceCardProps) {
   return (

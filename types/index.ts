@@ -42,3 +42,10 @@ export interface NoteCardProps {
     createdBy: string;
   };
 }
+
+export interface ResourceCardProps {
+  title: string;
+  subtitle?: string;
+  href: string;
+  icon?: React.ReactNode;
+}

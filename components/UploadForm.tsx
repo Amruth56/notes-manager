@@ -24,34 +24,29 @@ export default function UploadForm() {
   const [isPersonal, setIsPersonal] = useState(false);
   const [error, setError] = useState("");
 
-  // 1. Fetch Session (User Role)
   const { data: session } = useQuery({
     queryKey: ["session"],
     queryFn: fetchSession,
   });
   const userRole = session?.user?.role || "";
 
-  // 2. Fetch Branches
   const { data: branches = [], isLoading: branchesLoading } = useQuery({
     queryKey: ["branches"],
     queryFn: fetchBranches,
   });
 
-  // 3. Fetch Semesters (Dependent on selectedBranch)
   const { data: semesters = [] } = useQuery({
     queryKey: ["semesters", selectedBranch],
     queryFn: () => fetchSemesters(selectedBranch),
     enabled: !!selectedBranch && selectedBranch !== "new",
   });
 
-  // 4. Fetch Subjects (Dependent on selectedSemester)
   const { data: subjects = [] } = useQuery({
     queryKey: ["subjects", selectedSemester],
     queryFn: () => fetchSubjects(selectedSemester),
     enabled: !!selectedSemester && selectedSemester !== "new",
   });
 
-  // Mutations
   const createBranchMutation = useMutation({ mutationFn: createBranch });
   const createSemesterMutation = useMutation({ mutationFn: createSemester });
   const createSubjectMutation = useMutation({ mutationFn: createSubject });
@@ -86,7 +81,6 @@ export default function UploadForm() {
       let finalSemesterId = selectedSemester;
       let finalSubjectId = selectedSubject;
 
-      // Create new branch
       if (!isPersonal && selectedBranch === "new" && newBranchName.trim()) {
         if (userRole !== "professor" && userRole !== "cr") throw new Error("Permission denied");
         const newBranch = await createBranchMutation.mutateAsync(newBranchName.trim());
@@ -94,7 +88,6 @@ export default function UploadForm() {
         queryClient.invalidateQueries({ queryKey: ["branches"] });
       }
 
-      // Create new semester
       if (!isPersonal && selectedSemester === "new" && newSemesterNumber.trim() && finalBranchId) {
         if (userRole !== "professor" && userRole !== "cr") throw new Error("Permission denied");
         const newSemester = await createSemesterMutation.mutateAsync({
@@ -105,7 +98,6 @@ export default function UploadForm() {
         queryClient.invalidateQueries({ queryKey: ["semesters", finalBranchId] });
       }
 
-      // Create new subject
       if (!isPersonal && selectedSubject === "new" && newSubjectName.trim()) {
         const newSubject = await createSubjectMutation.mutateAsync({
           name: newSubjectName.trim(),
@@ -117,7 +109,6 @@ export default function UploadForm() {
 
       if (!isPersonal && !finalSubjectId) throw new Error("Please select or create a subject");
 
-      // File conversion
       const fileUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -165,7 +156,6 @@ export default function UploadForm() {
         </div>
       )}
 
-      {/* Personal Note Toggle */}
       <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-xl">
         <input
           type="checkbox"
@@ -179,7 +169,6 @@ export default function UploadForm() {
         </label>
       </div>
 
-      {/* Note Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Note Title *</label>
         <input
@@ -192,11 +181,9 @@ export default function UploadForm() {
         />
       </div>
 
-      {/* Hierarchical Selection */}
       {!isPersonal && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Branch Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Branch *</label>
               <select
@@ -215,7 +202,6 @@ export default function UploadForm() {
               </select>
             </div>
 
-            {/* Semester Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Semester *</label>
               <select
@@ -236,7 +222,6 @@ export default function UploadForm() {
             </div>
           </div>
 
-          {/* New Branch Name Input */}
           {selectedBranch === "new" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">New Branch Name *</label>
@@ -251,7 +236,6 @@ export default function UploadForm() {
             </div>
           )}
 
-          {/* New Semester Number Input */}
           {selectedSemester === "new" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">New Semester Number *</label>
@@ -268,7 +252,6 @@ export default function UploadForm() {
             </div>
           )}
 
-          {/* Subject Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
             <select
@@ -286,7 +269,6 @@ export default function UploadForm() {
             </select>
           </div>
 
-          {/* New Subject Name */}
           {selectedSubject === "new" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">New Subject Name *</label>
@@ -303,7 +285,6 @@ export default function UploadForm() {
         </>
       )}
 
-      {/* File Upload */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Upload File (PDF or Image) *</label>
         <div className="relative">
@@ -325,7 +306,6 @@ export default function UploadForm() {
         </p>
       </div>
 
-      {/* Submit Buttons */}
       <div className="pt-4 flex gap-4">
         <button
           type="button"

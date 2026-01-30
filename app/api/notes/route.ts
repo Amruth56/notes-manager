@@ -21,11 +21,9 @@ export async function GET(req: Request) {
     if (subjectId) query.subjectId = subjectId;
 
     if (isPersonal) {
-      // Only show personal notes owned by the current user
       query.isPersonal = true;
       query.createdBy = (session.user as any).id;
     } else {
-      // Organizational notes are visible to everyone in the org
       query.isPersonal = false;
     }
 
