@@ -31,3 +31,14 @@ export interface INote extends Document {
   isPersonal: boolean;
   createdAt: Date;
 }
+
+export interface NoteCardProps {
+  note: {
+    _id: string;
+    title: string;
+    fileUrl: string;
+    fileType: string;
+    createdAt: string;
+    createdBy: string;
+  };
+}

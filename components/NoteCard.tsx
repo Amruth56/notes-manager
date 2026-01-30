@@ -5,17 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { deleteNote, updateNote } from "@/lib/api";
-
-interface NoteCardProps {
-  note: {
-    _id: string;
-    title: string;
-    fileUrl: string;
-    fileType: string;
-    createdAt: string;
-    createdBy: string;
-  };
-}
+import { NoteCardProps } from "@/types";
 
 export default function NoteCard({ note }: NoteCardProps) {
   const { data: session } = useSession();
@@ -58,7 +48,6 @@ export default function NoteCard({ note }: NoteCardProps) {
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 relative group">
-      {/* Action Buttons for Owner */}
       {isOwner && (
         <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 p-1 rounded-lg backdrop-blur-sm">
           <button
