@@ -34,9 +34,9 @@ export default function NoteCard({ note }: NoteCardProps) {
   });
 
   const isPdf = note.fileType === "pdf";
-  const role = (session?.user as any)?.role;
-  const isOwner = session?.user && (session.user as any).id === note.createdBy;
-  const isAdmin = ["professor", "cr"].includes(role);
+  const role = session?.user?.role;
+  const isOwner = session?.user && session.user.id === note.createdBy;
+  const isAdmin = role && ["professor", "cr"].includes(role);
   const canManage = isOwner || isAdmin;
 
   const handleDelete = async () => {

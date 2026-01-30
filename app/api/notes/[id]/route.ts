@@ -22,8 +22,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    const userRole = (session.user as any).role;
-    const userId = (session.user as any).id;
+    const userRole = session.user.role;
+    const userId = session.user.id;
 
     if (
       note.createdBy.toString() !== userId &&
@@ -68,8 +68,8 @@ export async function PUT(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    const userRole = (session.user as any).role;
-    const userId = (session.user as any).id;
+    const userRole = session.user.role;
+    const userId = session.user.id;
 
     if (
       note.createdBy.toString() !== userId &&

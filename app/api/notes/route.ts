@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     await connectDB();
 
-    let query: any = {};
+    const query: any = {};
     if (subjectId) query.subjectId = subjectId;
 
     if (isPersonal) {
