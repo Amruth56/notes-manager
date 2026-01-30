@@ -58,4 +58,4 @@ npm test
 - **Multiple Organizations**: Multi-tenant support planned for larger rollouts.
 
 ---
-Built with ❤️ for IIIT Dharwad students.
+Built with ❤️ for IIIT Dharwad students from Amruth Mandappa T S.
