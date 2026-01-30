@@ -24,17 +24,24 @@ export default function Navbar() {
                   Upload Notes
                 </Link>
               )}
-              <div className="flex items-center gap-3 ml-4 border-l pl-6 border-gray-100">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{session.user?.name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{(session.user as any).role}</p>
-                </div>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="text-sm text-gray-500 hover:text-red-600 transition"
-                >
-                  Logout
+              <div className="relative group ml-4">
+                <button className="w-10 h-10 rounded-full bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700 font-bold hover:bg-orange-200 transition">
+                  {session.user?.name?.charAt(0).toUpperCase() || "U"}
                 </button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
+                  <div className="px-4 py-3 border-b border-gray-50">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{session.user?.name}</p>
+                    <p className="text-xs text-gray-500 capitalize">{(session.user as any).role}</p>
+                  </div>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2 transition"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
             </>
           ) : (
